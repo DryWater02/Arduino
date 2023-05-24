@@ -1,0 +1,77 @@
+#include <Servo.h>
+
+Servo servoLeft;
+Servo servoRight;
+boolean chase = false;
+
+void setup(){
+  tone(4, 3000, 1000);
+  delay(1000);
+  pinMode(10, INPUT); 
+  pinMode(3, INPUT); 
+  pinMode(8, OUTPUT); 
+  pinMode(7, OUTPUT);
+  servoLeft.attach(12);
+  servoRight.attach(13); 
+  Serial.begin(9600); 
+  servoLeft.writeMicroseconds(1700);
+  servoRight.writeMicroseconds(1700);
+}
+void loop(){
+  int irLeft = irDetect(9, 10, 38000); 
+  int irRight = irDetect(2, 3, 38000); 
+  Serial.print("irLeft = ");
+  Serial.println(irLeft);
+  Serial.print("irRight = ");
+  Serial.println(irRight);
+  if(chase == false){
+    if((irLeft == 0) || (irRight == 0)){
+      chase = true;
+      Forward();
+      Buzz();
+    }
+  }
+  if(chase == true){
+    if(irLeft == 0 && irRight == 1){
+      Left(20);
+      Buzz(); 
+    }
+    else if(irRight == 0 && irLeft == 1){
+      Right(20);
+      Buzz();
+    }
+    else{
+      Forward();  
+    }
+  }
+}
+
+void Forward(){
+  servoLeft.writeMicroseconds(1700);
+  servoRight.writeMicroseconds(1300);
+}
+void Left(int time){ 
+  servoLeft.writeMicroseconds(1500);
+  delay(time);
+}
+void Right(int time){
+  servoRight.writeMicroseconds(1500);
+  delay(time);
+}
+void Buzz(){
+  for(int i = 0; i < 5; i++){
+    digitalWrite(7, HIGH); 
+    digitalWrite(8, HIGH);
+    tone(4, 4000, 10); 
+    delay(20);
+    digitalWrite(7, LOW); // Turn indicator LEDs off
+    digitalWrite(8, LOW);
+  }  
+}
+int irDetect(int irLedPin, int irReceiverPin, long frequency){
+  tone(irLedPin, frequency, 8);
+  delay(1);
+  int ir = digitalRead(irReceiverPin);
+  delay(1);
+  return ir;
+}
